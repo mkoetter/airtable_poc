@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import Airtable from 'airtable';
 import { ProductionRequest } from '@/types/airtable';
 
-// Initialize Airtable
-const base = new Airtable({
-  apiKey: process.env.AIRTABLE_API_KEY,
-}).base(process.env.AIRTABLE_BASE_ID!);
+// Initialize Airtable - lazy initialization to avoid build-time errors
+function getBase() {
+  return new Airtable({
+    apiKey: process.env.AIRTABLE_API_KEY,
+  }).base(process.env.AIRTABLE_BASE_ID!);
+}
 
 // Helper to handle Airtable special values (e.g., {"specialValue": "NaN"})
 function getNumericValue(value: unknown): number {
@@ -53,7 +55,7 @@ export async function GET(request: NextRequest) {
     const records: ProductionRequest[] = [];
 
     // Fetch records from Airtable
-    await base(process.env.AIRTABLE_REQUESTS_TABLE_NAME || 'Requests')
+    await getBase()(process.env.AIRTABLE_REQUESTS_TABLE_NAME || 'Requests')
       .select({
         maxRecords,
         view,
@@ -111,7 +113,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create record in Airtable
-    const createdRecords = await base(process.env.AIRTABLE_REQUESTS_TABLE_NAME || 'Requests').create([
+    const createdRecords = await getBase()(process.env.AIRTABLE_REQUESTS_TABLE_NAME || 'Requests').create([
       {
         fields: {
           'Slug': slug,
