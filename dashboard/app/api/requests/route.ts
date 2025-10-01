@@ -4,9 +4,15 @@ import { ProductionRequest } from '@/types/airtable';
 
 // Initialize Airtable - lazy initialization to avoid build-time errors
 function getBase() {
-  return new Airtable({
-    apiKey: process.env.AIRTABLE_API_KEY,
-  }).base(process.env.AIRTABLE_BASE_ID!);
+  const apiKey = process.env.AIRTABLE_API_KEY;
+
+  // Configure Airtable with proper authentication
+  // For Personal Access Tokens (starting with 'pat'), use as-is
+  const airtable = new Airtable({
+    apiKey: apiKey,
+  });
+
+  return airtable.base(process.env.AIRTABLE_BASE_ID!);
 }
 
 // Helper to handle Airtable special values (e.g., {"specialValue": "NaN"})
